@@ -1,6 +1,6 @@
 import mido
-msg = mido.Message('note_on', note=60)
-print(msg.type)
+mido_msg = mido.Message('note_on', note=60)
+print(mido_msg.type)
 
 mido.get_output_names()
 

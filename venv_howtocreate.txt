@@ -1,0 +1,35 @@
+1. install python
+https://www.python.org/
+
+2. latest pip, wheel, and virtualenv 
+py -m pip install --upgrade pip wheel setuptools virtualenv
+
+3. delete the current venv(from powershell with administrator preivilege)
+rm .\venv -force
+
+2. install venv in the git root
+py -m venv venv
+
+3. activate the virtual environment
+.\venv\Scripts\activate
+
+4. install pip, whell, and virtualenv again
+py -m pip install --upgrade pip wheel setuptools virtualenv
+
+5. install PyQt5
+pip install PyQt5
+
+6. install mido
+pip install mido
+pip install python-rtmidi
+
+7. check with 'helloword examples'
+
+8. setup settings.josn
+{
+    "python.pythonPath": "venv\\Scripts\\python.exe",
+    "python.linting.pylintPath": "venv\\Scripts\\pylint.exe",
+    "python.linting.pylintArgs": ["--extension-pkg-whitelist=PyQt5"]
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true    
+}
