@@ -1,0 +1,24 @@
+1. install python
+https://www.python.org/
+
+2. latest pip, wheel, and virtualenv 
+py -m pip install --upgrade pip wheel setuptools virtualenv
+
+2. install venv in the git root
+py -m venv venv
+
+3. activate the virtual environment
+.\venv\Scripts\activate
+
+4. install kivy dependencies
+py -m pip install docutils pygments pypiwin32 kivy_deps.sdl2==0.1.* kivy_deps.glew==0.1.*
+py -m pip install kivy_deps.gstreamer==0.1.*
+
+5. install kivy
+python -m pip install kivy==1.11.1
+
+6. install mido
+pip install mido
+pip install python-rtmidi
+
+7. check with 'helloword examples'

@@ -1,0 +1,10 @@
+#python cache
+*.pyc
+.mypy_cache/
+
+#venv
+venv/include/
+venv/Lib/
+venv/Scripts/
+venv/share/
+venv/pyvenv.cfg
