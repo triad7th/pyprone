@@ -29,7 +29,27 @@ pip install python-rtmidi
 {
     "python.pythonPath": "venv\\Scripts\\python.exe",
     "python.linting.pylintPath": "venv\\Scripts\\pylint.exe",
-    "python.linting.pylintArgs": ["--extension-pkg-whitelist=PyQt5"]
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true    
 }
+
+9. create pylintrc (beware using utf8 for powershell)
+pylint --generate-rcfile | Out-File -Encoding utf8 .pylintrc
+
+10. pylintrc setup - ignore subdirectory
+# Add files or directories matching the regex patterns to the blacklist. The
+# regex matches against base names, not paths.
+ignore-patterns=
+      **/examples/*
+
+11. pylintrc setup - whitelist packages using c exntensions
+# A comma-separated list of package or module names from where C extensions may
+# be loaded. Extensions are loading into the active Python interpreter and may
+# run arbitrary code.
+extension-pkg-whitelist=PyQt5, mido
+
+12. run vscode from venv!
+
+13. setup PYTHONPATH in venv
+create venv/lib/site-packages/pypron.pth
+write c:/repos/pyprone to the pypron.pth file. that's it.
