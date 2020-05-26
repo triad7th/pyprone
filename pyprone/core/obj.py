@@ -1,4 +1,4 @@
-from pyprone.helpers.type import short_type
+from pyprone.core.helpers.type import short_type
 
 class PrObj():
     """

@@ -1,84 +1,66 @@
 from typing import Union
 
+from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit, QVBoxLayout
 
-from pyprone.enums.qt import Position
-from pyprone.enums.act import Commands
-from pyprone.core import PrObj, PrObjCb
-from pyprone.entities import PrText, PrTextFactory
+from pyprone.core.enums.qt import WnPos, WnStatus
+from pyprone.core.enums.act import PrCmds
 from pyprone.agents import PrWorld, PrAct
-import pyprone.helpers as PrHelper
 
-Mapping: dict = {
-    # entity based command
-    "cls": Commands.PRTEXT_CLEAR,
-    "clear": Commands.PRTEXT_CLEAR,
+from .view import PrView
 
-    # cross entity command
-    "append": Commands.BROADCAST_TEXT,
-
-    # system command
-    "exit": Commands.SYSTEM_EXIT
-}
-
-class PrConV(PrObjCb):
+class PrConV(PrView):
     """
-    viwe for PrText
+    console view for PrText
     """
-    def __init__(self, name: str, world: PrWorld, act: PrAct, target_id: int, position: Union[Position, QPoint]):
+    def __init__(self,
+        name: str,
+        world: PrWorld,
+        act: PrAct,
+        target_id: int,
+        position: Union[WnPos, QPoint] = WnPos.NONE,
+        status: WnStatus = WnStatus.NONE):
         """
         name : name of this view
         target_id : PrObj id to show in this iew
         """
-        super().__init__(name)
-
-        # agents 
-        self.world = world
-        self.act = act
-
-        # entities
-        self.id_to_show = target_id
-
         # view
-        self.position: Position = position
         self.area: QPlainTextEdit = None
         self.line: QLineEdit = None
         self.layout: QVBoxLayout = None
-        self.window: QWidget = None
+        super().__init__(name, world, act, target_id, position, status)
 
-        # build
-        self.build()
+        # command mapping
+        self.map: dict = {
+            # entity based command
+            "cls": self.cmd_clear,
+            "clear": self.cmd_clear,
+
+            # cross entity command
+            "append": self.cmd_broadcast,
+            "list": self.cmd_entity_list,
+
+            # system command
+            "exit": self.cmd_exit
+        }
 
         # connect
         self.line.returnPressed.connect(self.on_return_pressed)
-
-    @property
-    def id_to_show(self):
-        """ PrObj id to show """
-        return self._id_to_show
-
-    @id_to_show.setter
-    def id_to_show(self, target_id: int):
-        """ PrObj is automatcially assigned/created when id_to_show is changed """
-        self._id_to_show = target_id
-        self._obj_to_show: PrText = PrTextFactory(self.world.find(target_id))
-
-    @property
-    def obj_to_show(self) -> PrText:
-        """ PrObj to show """
-        return self._obj_to_show
-
     # build
     def build(self):
         """ build Qt Widgets """
         # view
         self.area = QPlainTextEdit(self.obj_to_show.text)
-        #self.area.setFixedSize(600, 400)
+        self.area.setFont(QFont('consolas', 12))
+        self.area.setStyleSheet("background-color: black; color: white;")
+        self.area.setMaximumBlockCount(32)
         self.area.setFocusPolicy(Qt.NoFocus)
 
         # input
         self.line = QLineEdit()
+        self.line.setFont(QFont('consolas', 12))
+        self.line.setStyleSheet("background-color: black; color: white;")
 
         # layout
         self.layout = QVBoxLayout()
@@ -86,49 +68,72 @@ class PrConV(PrObjCb):
         self.layout.addWidget(self.line)
 
         # window
-        self.window = QWidget()
-        self.window.setMinimumSize(640, 400)
-        self.window.setWindowTitle(self.name)
+        super().build()
+
+        # add layout
         self.window.setLayout(self.layout)
-        if isinstance(self.position, Position):
-            if self.position == Position.BOTTOM_RIGHT:
-                self.window.move(QPoint(*PrHelper.qt.bottom_right(self.window)))
-        elif isinstance(self.position, QPoint):
-            self.window.move(self.position)
-        else:
-            self.window.move(QPoint(0, 0))
-        self.window.show()
+        self.window.setStyleSheet("background-color: black; color: white;")
+        self.adjust()        
 
-    def send(self, pid: int, command: Commands, *args: list, **kwargs: dict):
-        self.act.do(self.tag, pid, command, *args, **kwargs)
+    # commands
+    def cmd_append(self, text: str):
+        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_APPEND_TEXT, text=text)
 
-    # callbacks
+    def cmd_add(self, text: str):
+        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_ADD_TEXT, text=text)
+
+    def cmd_clear(self, args: list):
+        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_CLEAR)
+
+    def cmd_broadcast(self, args: list):
+        if len(args) > 0:
+            self.send(pid=self.id_to_show, command=PrCmds.BROADCAST_TEXT, text=args[0])
+
+    def cmd_entity_list(self, args: list):
+        self.send(pid=self.id_to_show, command=PrCmds.BROADCAST_ENTITY_LIST)
+
+    def cmd_exit(self, args: list):
+        self.send(pid=self.id_to_show, command=PrCmds.SYSTEM_EXIT)
+
+    # input
     def on_return_pressed(self):
         text = self.line.text()
 
         # console feedback
-        self.send(
-            self.id_to_show,
-            Commands.PRTEXT_APPEND_TEXT,
-            text=text)
+        self.cmd_append(text)
 
         # console command
-        tokens = text.split(' ')
-        cmd = Mapping.get(tokens[0])
-        args = tokens[1:len(tokens)]
-
-        if cmd:
-            self.send(
-                self.id_to_show,
-                cmd,
-                *args)
+        if self.run(text):
+            self.cmd_add('>>>')
         else:
-            self.send(
-                self.id_to_show,
-                Commands.PRTEXT_APPEND_TEXT,
-                text='syntax error!')
-
+            self.cmd_add('syntax error!\n>>>')
+        # clear line
         self.line.clear()
 
+    # act
+    def send(self, pid: int, command: PrCmds, **kwargs: dict):
+        self.act.do(pid, command, **kwargs)
+
+    def get_cmd(self, text) -> str:
+        tokens = text.split(' ')
+        return tokens[0]
+
+    def get_args(self, text) -> list:
+        tokens = text.split(' ')
+        return tokens[1:len(tokens)]
+
+    def run(self, text: str) -> bool:
+        cmd = self.get_cmd(text)
+        args = self.get_args(text)
+        func = self.map.get(cmd)
+        if func:
+            func(args)
+            return True
+        return False
+
+    # time
     def update(self, **kwargs: dict):
-        self.area.setPlainText(self.obj_to_show.text)
+        if not self.area.toPlainText() == self.obj_to_show.text:
+            self.area.setPlainText(self.obj_to_show.text)
+            self.area.moveCursor(QTextCursor.End)
+

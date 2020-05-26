@@ -1,7 +1,7 @@
-from typing import List, Union
+from typing import List
 
 from pyprone.core import PrObj
-from pyprone.entities import PrText, PrTextFactory
+from pyprone.entities import PrTextFactory
 
 class PrWorld(PrObj):
     """
@@ -13,7 +13,7 @@ class PrWorld(PrObj):
 
         self.entities: List[PrObj] = []
 
-        self.entities.append(PrTextFactory('con'))
+        self.entities.append(PrTextFactory('con', '>>>'))
         self.entities.append(PrTextFactory('mon'))
 
     def show(self):

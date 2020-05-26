@@ -1,48 +1,57 @@
+from typing import Union
+
+from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QPlainTextEdit, QVBoxLayout
 
-from pyprone.objects import PrSys
-import pyprone.helpers as PrHelper
+from pyprone.core.enums.qt import WnPos, WnStatus
+from pyprone.agents import PrWorld, PrAct
 
-class PrSysView():
-    def __init__(self, syscon, syscon_cmd=None, add_input=False, title='PsSysView', pos=None):
-        # object
-        self.syscon = syscon
+from .view import PrView
 
-        # command
-        self.syscon_cmd = syscon_cmd
-
+class PrMonV(PrView):
+    """
+    monitor view for PrText
+    """
+    def __init__(self,
+        name: str,
+        world: PrWorld,
+        act: PrAct,
+        target_id: int,
+        position: Union[WnPos, QPoint] = WnPos.NONE,
+        status: WnStatus = WnStatus.NONE):
+        """
+        name : name of this view
+        target_id : PrObj id to show in this iew
+        """
         # view
-        self.area = QPlainTextEdit(self.syscon.text)
-        self.area.setFixedSize(600, 400)
-        self.area.setFocusPolicy(Qt.NoFocus)
+        self.area: QPlainTextEdit = None
+        self.layout: QVBoxLayout = None
+        super().__init__(name, world, act, target_id, position, status)
 
-        # input
-        if add_input: self.line = QLineEdit()
+    # build
+    def build(self):
+        """ build Qt Widgets """
+        # view
+        self.area = QPlainTextEdit(self.obj_to_show.text)
+        self.area.setFont(QFont('consolas', 12))
+        self.area.setStyleSheet("background-color: black; color: white;")
+        self.area.setMaximumBlockCount(128)
+        self.area.setFocusPolicy(Qt.NoFocus)
+        
 
         # layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.area)
-        if add_input: self.layout.addWidget(self.line)
 
         # window
-        self.window = QWidget()
-        self.window.setWindowTitle(title)
+        super().build()
+
+        # add layout
         self.window.setLayout(self.layout)
-        if pos:
-            p = QPoint(*PrHelper.qt.bottom_right(self.window))
-            self.window.move(p + pos)
-        else:
-            self.window.move(QPoint(*PrHelper.qt.bottom_right(self.window)))
-        self.window.show()
+        self.window.setStyleSheet("background-color: black; color: white;")
 
-        # connect
-        if add_input: self.line.returnPressed.connect(self.return_pressed)
-
-    def return_pressed(self):
-        text = self.line.text()        
-        self.syscon_cmd.command(text)        
-        self.line.clear()
-
-    def update(self):
-        self.area.setPlainText(self.syscon.text)
+    # time callback
+    def update(self, **kwargs: dict):
+        self.area.setPlainText(self.obj_to_show.text)
+        self.area.moveCursor(QTextCursor.End)

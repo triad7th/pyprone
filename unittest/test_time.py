@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QApplication
+
 from pyprone.core import PrObjCb
 from pyprone.agents import PrTime
 class FakeObjCb(PrObjCb):

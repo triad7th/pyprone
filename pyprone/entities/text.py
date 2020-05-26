@@ -13,7 +13,7 @@ class PrText(PrObj):
 
         self.text = init_text
         if self.text:
-            self.text = f'{self.text}\n'
+            self.text = f'{self.text}'
 
     @property
     def text(self):
@@ -32,15 +32,20 @@ class PrText(PrObj):
         if text:
             self.text += f'{text}\n'
             self.log(f'append : {text}')
+    def add(self, text):
+        """ append text to the memory """
+        if text:
+            self.text += f'{text}'
+            self.log(f'add : {text}')
 
     def clear(self):
         """ clear text memory """
         self.text = ''
 
-def factory(target_obj: any) -> PrText:
+def factory(target_obj: any, init_text='') -> PrText:
     """ create PrText from any givn object """
     if isinstance(target_obj, PrText):
         return target_obj
     if isinstance(target_obj, str):
-        return PrText(target_obj)
+        return PrText(target_obj, init_text)
     return PrText("this is not a PrText Obj")

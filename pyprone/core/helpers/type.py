@@ -8,7 +8,6 @@ def short_type(obj):
     s = s.strip()
     return s
 
-    
 if __name__ == '__main__':
     from pyprone.core import PrObj
 

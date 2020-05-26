@@ -1,10 +1,10 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication
 
-from pyprone.enums.qt import Position
+from pyprone.core.enums.qt import WnPos, WnStatus
 from pyprone.agents import PrWorld, PrAct, PrTime
 from pyprone.entities import PrText
-from pyprone.views import PrConV
+from pyprone.views import PrConV, PrMonV
 
 # app
 app = QApplication([])
@@ -24,14 +24,15 @@ conv = PrConV(
     world=world,
     act=act,
     target_id=con.id,
-    position=Position.BOTTOM_RIGHT,
+    position=WnPos.BOTTOM_RIGHT,
 )
-monv = PrConV(
+monv = PrMonV(
     name='monv',
     world=world,
     act=act,
     target_id=mon.id,
     position=QPoint(2560, 0),
+    status=WnStatus.MAXIMIZED
 )
 
 # timer registers
@@ -39,5 +40,4 @@ timer.register(conv.update, name=conv.name, pid=conv.id)
 timer.register(monv.update, name=monv.name, pid=monv.id)
 
 # code
-con.append("Hello World")
-app.exec_()
+exit(app.exec_())
