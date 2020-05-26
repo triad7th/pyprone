@@ -1,23 +1,23 @@
 from PyQt5.QtWidgets import QApplication
-from pyprone.objects import PrTime
-
-class FakeSysconView():
+from pyprone.core import PrObjCb
+from pyprone.agents import PrTime
+class FakeObjCb(PrObjCb):
     def __init__(self, name):
-        self.name = name
+        PrObjCb.__init__(self, name)
 
-    def update(self):
-        print(f"{self.name} update")
+    def update(self, number: int, boy: str):
+        self.log(f"{self.name}|{number}|{boy} update")
 
-app = QApplication([])
-time = PrTime(1000)
-syscon1 = FakeSysconView("syscon1")
-syscon2 = FakeSysconView("syscon2")
-syscon3 = FakeSysconView("syscon3")
-syscon4 = FakeSysconView("syscon4")
 
-time.register(syscon1.update)
-time.register(syscon2.update)
-time.register(syscon3.update)
-time.register(syscon4.update)
+def test_PrObjCb():
+    app = QApplication([])
+    time = PrTime('1s timer', 1000)
+    obj1 = FakeObjCb("obj1")
+    obj2 = FakeObjCb("obj2")
 
-app.exec_()
+    time.register(obj1.update, number=10, boy='a')
+    time.register(obj2.update, number=11, boy='b')
+
+    app.exec_()
+
+test_PrObjCb()

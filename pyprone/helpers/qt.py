@@ -1,13 +1,14 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget
+from pyprone.helpers.common import log
 
 def bottom_right(widget):
     ag = QDesktopWidget().availableGeometry()
     #sg = QDesktopWidget().screenGeometry()
     pos = ag.width() - widget.width(), ag.height() - widget.height()
 
-    print(f'widget = {widget.size()}')
-    print(f'screen = {ag.size()}')
-    print(f'return = {pos}')
+    log(bottom_right.__name__, f'widget = {widget.size()}')
+    log(bottom_right.__name__, f'screen = {ag.size()}')
+    log(bottom_right.__name__, f'return = {pos}')
 
     return pos
 
