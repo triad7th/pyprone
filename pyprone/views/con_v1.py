@@ -6,12 +6,11 @@ from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit, QVBoxLayout
 
 from pyprone.core.enums.qt import WnPos, WnStatus
 from pyprone.core.enums.act import PrCmds
-from pyprone.core.console import QConsole
 from pyprone.agents import PrWorld, PrAct
 
 from .view import PrView
 
-class PrConV(PrView):
+class PrConV1(PrView):
     """
     console view for PrText
     """
@@ -27,7 +26,8 @@ class PrConV(PrView):
         target_id : PrObj id to show in this iew
         """
         # view
-        self.area: QConsole = None
+        self.area: QPlainTextEdit = None
+        self.line: QLineEdit = None
         self.layout: QVBoxLayout = None
         super().__init__(name, world, act, target_id, position, status)
 
@@ -45,18 +45,27 @@ class PrConV(PrView):
             "exit": self.cmd_exit
         }
 
+        # connect
+        self.line.returnPressed.connect(self.on_return_pressed)
     # build
     def build(self):
         """ build Qt Widgets """
         # view
-        self.area = QConsole()
-        self.area.on_text_pressed = self.on_text_pressed
-        self.area.on_backspace_pressed = self.on_backspace_pressed
-        self.area.on_return_pressed = self.on_return_pressed
+        self.area = QPlainTextEdit(self.obj_to_show.text)
+        self.area.setFont(QFont('consolas', 12))
+        self.area.setStyleSheet("background-color: black; color: white;")
+        self.area.setMaximumBlockCount(32)
+        self.area.setFocusPolicy(Qt.NoFocus)
+
+        # input
+        self.line = QLineEdit()
+        self.line.setFont(QFont('consolas', 12))
+        self.line.setStyleSheet("background-color: black; color: white;")
 
         # layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.area)
+        self.layout.addWidget(self.line)
 
         # window
         super().build()
@@ -70,8 +79,8 @@ class PrConV(PrView):
     def cmd_append(self, text: str):
         self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_APPEND_TEXT, text=text)
 
-    def cmd_back(self, blocker: str):
-        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_BACK_TEXT, blocker=blocker)
+    def cmd_add(self, text: str):
+        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_ADD_TEXT, text=text)
 
     def cmd_clear(self, args: list):
         self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_CLEAR)
@@ -87,19 +96,19 @@ class PrConV(PrView):
         self.send(pid=self.id_to_show, command=PrCmds.SYSTEM_EXIT)
 
     # input
-    def on_text_pressed(self, text):
-        self.cmd_append(text)
+    def on_return_pressed(self):
+        text = self.line.text()
 
-    def on_backspace_pressed(self, cursor):
-        self.cmd_back('>>>')
+        # console feedback
+        self.cmd_append(f'{text}\n')
 
-    def on_return_pressed(self, cursor):
-        cmd = self.obj_to_show.lastline('>>>')
-        self.cmd_append('\n') # add return character to the entity
-        if self.run(cmd):
-            self.cmd_append('>>>')
+        # console command
+        if self.run(text):
+            self.cmd_add('>>>')
         else:
-            self.cmd_append('syntax error!\n>>>')
+            self.cmd_add('syntax error!\n>>>')
+        # clear line
+        self.line.clear()
 
     # act
     def send(self, pid: int, command: PrCmds, **kwargs: dict):

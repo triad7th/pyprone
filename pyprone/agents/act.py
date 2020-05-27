@@ -13,7 +13,7 @@ class PrAct(PrObj):
         self.funcs: dict = {
             # entity based command
             Cmds.PRTEXT_APPEND_TEXT: self.prtext_append_text,
-            Cmds.PRTEXT_ADD_TEXT: self.prtext_add_text,
+            Cmds.PRTEXT_BACK_TEXT: self.prtext_back_text,
             Cmds.PRTEXT_CLEAR: self.prtext_clear_screen,
 
             # cross entity command
@@ -43,10 +43,10 @@ class PrAct(PrObj):
         pr_text: PrText = self.world.find(pid)
         pr_text.append(text)
 
-    def prtext_add_text(self, pid: int, text: str, **kwargs: dict):
+    def prtext_back_text(self, pid: int, blocker: str, **kwargs: dict):
         """ append text to PrText """
         pr_text: PrText = self.world.find(pid)
-        pr_text.add(text)
+        pr_text.back(blocker)
 
     def prtext_clear_screen(self, pid: int, **kwargs: dict):
         """ clear text in PrText """
@@ -57,7 +57,7 @@ class PrAct(PrObj):
         """ broadcast text to all PrMon """
         mon: PrText = self.world.find('mon')
         if mon:
-            mon.append(text)
+            mon.append(text + '\n')
 
     def broadcast_entity_list(self, pid: int, **kwargs: dict):
         """ broadcast entity list to all PrMon """
@@ -65,8 +65,8 @@ class PrAct(PrObj):
         mon: PrText = self.world.find('mon')
         if mon:
             for entity in self.world.entities:
-                mon.append(entity.whoami)
-            pr_text.append(f'{len(self.world.entities)} entities loaded')
+                mon.append(entity.whoami + '\n')
+            pr_text.append(f'{len(self.world.entities)} entities loaded\n')
 
     def system_exit_application(self, **kwargs: dict):
         """ exit application """

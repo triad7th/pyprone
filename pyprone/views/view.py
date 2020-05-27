@@ -62,7 +62,7 @@ class PrView(PrObjCb):
     def build(self):
         # window
         self.window = QWidget()
-        self.window.setMinimumSize(900, 600)
+        self.window.setMinimumSize(900, 605)
         self.window.setWindowTitle(self.name)
         self.adjust()
         self.window.show()

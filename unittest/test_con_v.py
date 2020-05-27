@@ -12,7 +12,7 @@ app = QApplication([])
 # agents
 world = PrWorld('world')
 act = PrAct('act', world)
-timer = PrTime('timer_con', 100)
+timer = PrTime('timer_con', 20)
 
 # entities
 con: PrText = world.find(world.find_id('con'))

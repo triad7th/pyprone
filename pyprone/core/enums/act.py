@@ -4,7 +4,7 @@ class PrCmds(Enum):
     """ command enum """
     # entity based command
     PRTEXT_APPEND_TEXT = 1
-    PRTEXT_ADD_TEXT = 2
+    PRTEXT_BACK_TEXT = 2
     PRTEXT_CLEAR = 3
 
     # cross entity command

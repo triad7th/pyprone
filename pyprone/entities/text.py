@@ -19,6 +19,10 @@ class PrText(PrObj):
     def text(self):
         return self._text
 
+    @property
+    def len(self):
+        return len(self.text)
+
     @text.setter
     def text(self, text):
         if len(text) > PrText.cutoff:
@@ -27,16 +31,24 @@ class PrText(PrObj):
             self._text = text
 
     # public methods
+    def assign(self, text):
+        """ assign the whole text """
+        self.text = text
+
     def append(self, text):
         """ append text to the memory """
         if text:
-            self.text += f'{text}\n'
-            self.log(f'append : {text}')
-    def add(self, text):
-        """ append text to the memory """
-        if text:
             self.text += f'{text}'
-            self.log(f'add : {text}')
+            
+    def back(self, blocker='>>>'):
+        """ delete the last character """
+        if not self.text[self.len-4:self.len] == f'\n{blocker}':
+            if self.len > len(blocker):
+                self.assign(self.text[0:self.len-1])
+
+    def lastline(self, blocker='>>>') -> str:
+        """ return the last line text """
+        return self.text[self.text.rfind('\n') + len(blocker) + 1:self.len]
 
     def clear(self):
         """ clear text memory """

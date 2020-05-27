@@ -4,7 +4,7 @@ from .common import log
 def bottom_right(widget):
     ag = QDesktopWidget().availableGeometry()
     sg = QDesktopWidget().screenGeometry()
-    pos = sg.width() - widget.width(), sg.height() - widget.height() - 32
+    pos = sg.width() - widget.width() - 1, sg.height() - widget.height() - 32
 
     log(bottom_right.__name__, f'widget = {widget.size()}')
     log(bottom_right.__name__, f'screen = {ag.size()}')
