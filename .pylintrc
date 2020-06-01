@@ -12,11 +12,12 @@ fail-under=10
 # paths.
 ignore=
       CVS,
-      helloworld_kivy.py
+      helloworld_kivy.py,
+      act_console.py
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=      
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

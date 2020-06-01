@@ -1,14 +1,14 @@
 from typing import Union
+from os import listdir
 
 from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QPlainTextEdit, QLineEdit, QVBoxLayout
 
-from pyprone.core.enums.qt import WnPos, WnStatus
-from pyprone.core.enums.act import PrCmds
-from pyprone.core.console import QConsole
-from pyprone.agents import PrWorld, PrAct
+from pyprone.core.enums import WnPos, WnStatus, PrCmds
+from pyprone.core.widgets import QConsole
 
+from pyprone.agents import PrWorld, PrAct
 from .view import PrView
 
 class PrConV(PrView):
@@ -42,6 +42,8 @@ class PrConV(PrView):
             "list": self.cmd_entity_list,
 
             # system command
+            "files": self.cmd_files,
+            "help": self.cmd_help,
             "exit": self.cmd_exit
         }
 
@@ -53,6 +55,7 @@ class PrConV(PrView):
         self.area.on_text_pressed = self.on_text_pressed
         self.area.on_backspace_pressed = self.on_backspace_pressed
         self.area.on_return_pressed = self.on_return_pressed
+        self.area.setFocusPolicy(Qt.StrongFocus)
 
         # layout
         self.layout = QVBoxLayout()
@@ -64,27 +67,34 @@ class PrConV(PrView):
         # add layout
         self.window.setLayout(self.layout)
         self.window.setStyleSheet("background-color: black; color: white;")
-        self.adjust()        
+        self.adjust()
+        
 
     # commands
     def cmd_append(self, text: str):
-        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_APPEND_TEXT, text=text)
+        self.send(command=PrCmds.PRTEXT_APPEND_TEXT, text=text)
 
     def cmd_back(self, blocker: str):
-        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_BACK_TEXT, blocker=blocker)
+        self.send(command=PrCmds.PRTEXT_BACK_TEXT, blocker=blocker)
 
     def cmd_clear(self, args: list):
-        self.send(pid=self.id_to_show, command=PrCmds.PRTEXT_CLEAR)
+        self.send(command=PrCmds.PRTEXT_CLEAR)
 
     def cmd_broadcast(self, args: list):
         if len(args) > 0:
-            self.send(pid=self.id_to_show, command=PrCmds.BROADCAST_TEXT, text=args[0])
+            self.send(command=PrCmds.BROADCAST_TEXT, text=args[0])
 
     def cmd_entity_list(self, args: list):
-        self.send(pid=self.id_to_show, command=PrCmds.BROADCAST_ENTITY_LIST)
+        self.send(command=PrCmds.BROADCAST_ENTITY_LIST)
+
+    def cmd_help(self, args: list):
+        self.send(command=PrCmds.PRTEXT_APPEND_TEXT, text=f'{" ".join(self.map.keys())}\n')
+
+    def cmd_files(self, args: list):
+        self.send(command=PrCmds.PRTEXT_APPEND_TEXT, text=f'{" ".join(listdir("./pyprone/resources/midifiles"))}\n')
 
     def cmd_exit(self, args: list):
-        self.send(pid=self.id_to_show, command=PrCmds.SYSTEM_EXIT)
+        self.send(command=PrCmds.SYSTEM_EXIT)
 
     # input
     def on_text_pressed(self, text):
@@ -102,8 +112,9 @@ class PrConV(PrView):
             self.cmd_append('syntax error!\n>>>')
 
     # act
-    def send(self, pid: int, command: PrCmds, **kwargs: dict):
-        self.act.do(pid, command, **kwargs)
+    def send(self, command: PrCmds, **kwargs: dict):
+        """ pid : self.id_to_show """
+        self.act.do(kwargs['pid'] if kwargs.get('pid') else self.id_to_show, command, **kwargs)
 
     def get_cmd(self, text) -> str:
         tokens = text.split(' ')

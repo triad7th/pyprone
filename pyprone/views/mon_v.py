@@ -4,9 +4,8 @@ from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QPlainTextEdit, QVBoxLayout
 
-from pyprone.core.enums.qt import WnPos, WnStatus
+from pyprone.core.enums import WnPos, WnStatus
 from pyprone.agents import PrWorld, PrAct
-
 from .view import PrView
 
 class PrMonV(PrView):

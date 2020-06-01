@@ -3,8 +3,9 @@ from typing import Union
 from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QWidget
 
-from pyprone.core.enums.qt import WnPos, WnStatus
+from pyprone.core.enums import WnPos, WnStatus
 from pyprone.core import PrObjCb
+
 from pyprone.entities import PrText, PrTextFactory
 from pyprone.agents import PrWorld, PrAct
 

@@ -1,9 +1,9 @@
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QApplication
 
-from pyprone.core.enums.qt import WnPos, WnStatus
-from pyprone.agents import PrWorld, PrAct, PrTime
+from pyprone.core.enums import WnPos, WnStatus
 from pyprone.entities import PrText
+from pyprone.agents import PrWorld, PrAct, PrTime
 from pyprone.views import PrConV, PrMonV
 
 # app
@@ -12,13 +12,14 @@ app = QApplication([])
 # agents
 world = PrWorld('world')
 act = PrAct('act', world)
-timer = PrTime('timer_con', 20)
+time = PrTime('time')
 
 # entities
 con: PrText = world.find(world.find_id('con'))
 mon: PrText = world.find(world.find_id('mon'))
 
 # views
+
 conv = PrConV(
     name='conv',
     world=world,
@@ -35,9 +36,11 @@ monv = PrMonV(
     status=WnStatus.MAXIMIZED
 )
 
+conv.window.activateWindow()
+
 # timer registers
-timer.register(conv.update, name=conv.name, pid=conv.id)
-timer.register(monv.update, name=monv.name, pid=monv.id)
+time.register(conv)
+time.register(monv)
 
 # code
 exit(app.exec_())
