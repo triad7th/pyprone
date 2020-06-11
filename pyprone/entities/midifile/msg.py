@@ -87,7 +87,7 @@ class PrMidiMsg():
             for name in spec.attributes:
                 attributes.append('{:16} | {:16}'.format(
                     name[0:16], str(getattr(self._core, name))[0:16]))
-            attributes = ' | '.join(attributes[0:1]) + ' | '
+            attributes = ' | '.join(attributes[0:1])
             if attributes:
                 rep += f' | {str(attributes)}'
         else:

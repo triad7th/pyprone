@@ -1,1 +1,1 @@
-from .midifile import PrMidifile
+from .midifile import PrMidiFile

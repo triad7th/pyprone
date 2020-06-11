@@ -56,6 +56,7 @@ class PrMidiTrack():
     # public methods
     def append(self, msg: PrMidiMsg):
         self._msgs.append(msg)
+        self.forward()
     def rewind(self):
         ''' rewind the internal cursor to zero '''
         self._idx = 0

@@ -43,17 +43,20 @@ class PrMidiTempotrack(PrMidiTrack):
                 csr.tempo = msg.tempo
             else:
                 csr.tick += msg.time # msg.time: other ticks
-
     # get cursor by given tick
     def cursor(self, tick: int) -> PrMidiCursor:
+        ''' returns abs_tick, abs_time from the given tick '''
         csr = PrMidiCursor(tempo=DEFAULT_TEMPO, abs_tick=0, abs_time=0)
         self.rewind()
-        for t in self:
+        for t in self: # find the right tempo
             if t.tick >= tick:
-                dtick = tick - csr.abs_tick
-                dtime = tick2second(dtick, self.tpb, csr.tempo)
-                return PrMidiCursor(
-                    tempo=csr.tempo,
-                    abs_tick=csr.abs_tick + dtick,
-                    abs_time=csr.abs_time + dtime)
-            csr.abs_tick, csr.abs_time, csr.tempo = t.tick, t.time, t.msg.tempo
+                break
+            csr.abs_tick, csr.abs_time, csr.tempo = t.tick, t.time, t.msg.tempo # counting abs_time
+        # delta tick / delta time
+        dtick = tick - csr.abs_tick
+        dtime = tick2second(dtick, self.tpb, csr.tempo)
+        # return abs_tick / abs_time
+        return PrMidiCursor(
+            tempo=csr.tempo,
+            abs_tick=csr.abs_tick + dtick,
+            abs_time=csr.abs_time + dtime)
