@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QApplication
 
 from pyprone.core.enums import WnPos, WnStatus

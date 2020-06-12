@@ -1,4 +1,5 @@
 from typing import List
+from time import perf_counter
 
 from PyQt5.QtCore import QTimer
 from pyprone.core import PrObj
@@ -20,8 +21,9 @@ class PrClock(PrObj):
         self._interval = interval
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self.run)
+        self.timer.timeout.connect(self.run)        
         self.timer.start(self._interval)
+        self.begin = perf_counter()
         super().__init__(name)
 
     def register(self, func: callable, **kwargs: dict):
@@ -34,6 +36,9 @@ class PrClock(PrObj):
                 callback.call()
             elif callable(callback):
                 callback()
+
+    def elapsed(self):
+        return perf_counter() - self.begin
 
 class PrTime(PrObj):
     """

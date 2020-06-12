@@ -6,7 +6,7 @@ class PrMidiMsg():
     def __init__(self, core: Union[Message, MetaMessage], **kwargs: dict):
         self._core = core
         self._tick = kwargs.get('tick', None)
-        self._time = kwargs.get('time', None)
+        self._secs = kwargs.get('secs', None)
 
         if set(['tpb', 'tempo']) <= set(kwargs):
             self.update(kwargs['tpb'], kwargs['tempo'])
@@ -16,7 +16,7 @@ class PrMidiMsg():
 
     def update(self, tpb: int, tempo: int):
         self._tick = self._core.time
-        self._time = tick2second(self._core.time, tpb, tempo)
+        self._secs = tick2second(self._core.time, tpb, tempo)
     @property
     def core(self):
         return self._core
@@ -27,8 +27,8 @@ class PrMidiMsg():
     def tick(self):
         return getattr(self, '_tick', None)
     @property
-    def time(self):
-        return float(getattr(self, '_time', None))
+    def secs(self):
+        return float(getattr(self, '_secs', None))
     @property
     def channel(self):
         return getattr(self._core, 'channel', None)
@@ -119,4 +119,4 @@ class PrMidiMsg():
             elif self.type == 'tune_request':
                 pass
 
-        return f'{rep[0:82]:82} | tick: {self.tick:>10} | time: {self.time:>16.4}'
+        return f'{rep[0:82]:82} | tick: {self.tick:>10} | secs: {self.secs:>16.4}'

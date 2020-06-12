@@ -7,7 +7,7 @@ class PrMidiTrack():
         self._no: int = no
         self._idx: int = 0
         self._tick: int = 0
-        self._time: float = 0
+        self._secs: float = 0
 
     @property
     def name(self):
@@ -41,9 +41,9 @@ class PrMidiTrack():
         ''' absolute tick time as of the message index '''
         return self._tick + self.lookup().tick if not self.stuck else 0            
     @property
-    def time(self):
+    def secs(self):
         ''' absolute time(sec) as of the message index '''
-        return self._time + self.lookup().time if not self.stuck else 0            
+        return self._secs + self.lookup().secs if not self.stuck else 0            
     @property
     def msg(self) -> PrMidiMsg:
         ''' get a msg at the idx '''
@@ -61,7 +61,7 @@ class PrMidiTrack():
         ''' rewind the internal cursor to zero '''
         self._idx = 0
         self._tick = 0
-        self._time = 0
+        self._secs = 0
     def lookup(self) -> PrMidiMsg:
         ''' look up the vaule before get '''
         if not self.stuck:
@@ -70,7 +70,7 @@ class PrMidiTrack():
         ''' calculate the tick(abs) and increase the internal message idx '''
         if not self.stuck:
             self._tick += self.lookup().tick
-            self._time += self.lookup().time
+            self._secs += self.lookup().secs
             self._idx += 1
 
     # special methods

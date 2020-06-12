@@ -1,15 +1,13 @@
-from typing import List, Union
+from typing import List
 from sys import maxsize as MAXINT
-from mido import MidiFile, Message, MetaMessage, tick2second
-from mido.midifiles import merge_tracks
+from mido import MidiFile
 
 from pyprone.core import PrObj
-from pyprone.core.enums.midifile import DEFAULT_TEMPO, DEFAULT_TICKS_PER_BEAT
+from pyprone.core.enums.midifile import DEFAULT_TEMPO
 
 from .msg import PrMidiMsg
 from .track import PrMidiTrack
-from .cursor import PrMidiCursor
-from .tempotrack import PrMidiTempotrack
+from .tempotrack import PrMidiTempotrack as PrTempo
 
 class PrMidiFile(PrObj):
     """
@@ -23,14 +21,14 @@ class PrMidiFile(PrObj):
         self._midifile: MidiFile = None
         self._tempo: int = DEFAULT_TEMPO
         self._tracks: List[PrMidiTrack] = []
-        self._tempotrack: PrMidiTempotrack = None
+        self._tempotrack: PrTempo = None
 
     # properties
     @property
     def tempo(self):
         return self._tempo
     @property
-    def tempotrack(self) -> PrMidiTempotrack:
+    def tempotrack(self) -> PrTempo:
         return self._tempotrack if self._tempotrack else None
     @property
     def tracks(self):
@@ -49,66 +47,60 @@ class PrMidiFile(PrObj):
         [return 1st]\n
         None: stuck, can't go anymore | PrMidiTrack: the track that has next message\n
         '''
-        csr = PrMidiCursor(tick=MAXINT, track=None)
+        csr_abs_tick, csr_track = MAXINT, None
         for track in self.tracks:
             if not track.stuck:
-                csr.stuck = False
-                if csr.tick > track.tick:
-                    csr.tick = track.tick
-                    csr.track = track
-        return csr.track
+                if csr_abs_tick > track.tick:
+                    csr_abs_tick = track.tick
+                    csr_track = track
+        return csr_track
+
+    def __rewind(self):
+        ''' rewind all tracks to the beginning '''
+        for track in self.tracks:
+            track.rewind()
 
     # public methods
     def load(self, path: str):      
         # open midifile
         self._midifile = MidiFile(path)         
         # create a tempo track
-        self._tempotrack = PrMidiTempotrack(self._midifile)
+        self._tempotrack = PrTempo(self._midifile)
         # create other tracks
         for n, msgs in enumerate(self._midifile.tracks):
             if n > 0: # skip the tempo track
-                csr = PrMidiCursor(abs_tick=0, abs_time=0)
+                csr_abs_tick, csr_abs_secs = 0, 0
                 track = PrMidiTrack(n)
                 for msg in msgs:
                     if msg.type == 'track_name':
                         track.name = msg.name
                     if msg.time > 0:
-                        csr.abs_tick += msg.time
-                        delta = self.tempotrack.cursor(csr.abs_tick).abs_time - csr.abs_time
-                        csr.abs_time += delta
+                        csr_abs_tick += msg.time
+                        delta = self.tempotrack.cursor(csr_abs_tick)[PrTempo.SECS] - csr_abs_secs
+                        csr_abs_secs += delta
                     else:
                         delta = 0
-                    track.append(PrMidiMsg(msg.copy(), tick=msg.time, time=delta))
+                    track.append(PrMidiMsg(msg.copy(), tick=msg.time, secs=delta))
                 track.rewind()
                 self.tracks.append(track)
                 print(track)
 
     def run(self):
-        csr = PrMidiCursor(abs_time=0)
-        track = PrMidiTrack() # empty track for while condition
+        self.__rewind()
+        csr_abs_secs, track = 0, PrMidiTrack() # empty track for while condition
         while track:
             track = self.__next_track() # choosing a next track
             if track:
                 # yield 
-                # msg and delta time
+                # msg and delta secs
                 yield (
-                    track, csr,
-                    max(track.time - csr.abs_time, 0.0))    # negative value is ignored                                                        
-                                                            # 1. there's no minus time waiting!!
+                    track, csr_abs_secs,
+                    max(track.secs - csr_abs_secs, 0.0))    # negative value is ignored
+                                                            # 1. there's no minus time(secs) waiting!!
                                                             # 2. ths negative value must be really small
-
-                csr.abs_time = track.time
+                csr_abs_secs = track.secs
                 track.forward()
-
-    def merge_run(self):
-        csr = PrMidiCursor(tempo=DEFAULT_TEMPO)
-        for msg in merge_tracks(self._midifile.tracks):
-            yield self.__get_msg(msg, csr.tempo)
-            if msg.type == 'set_tempo':
-                csr.tempo = msg.tempo
-
-
-    # public methods
+        yield None
 
 def factory(target_obj: any) -> PrMidiFile:
     """ create PrText from any givn object """
