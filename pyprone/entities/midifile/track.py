@@ -53,15 +53,24 @@ class PrMidiTrack():
         ''' get a length of msg list '''
         return len(self.msgs)
 
-    # public methods
-    def append(self, msg: PrMidiMsg):
-        self._msgs.append(msg)
-        self.forward()
-    def rewind(self):
+    # pricate methods
+    def __rewind_zero(self):
         ''' rewind the internal cursor to zero '''
         self._idx = 0
         self._tick = 0
         self._secs = 0
+
+    # public methods
+    def append(self, msg: PrMidiMsg):
+        self._msgs.append(msg)
+        self.forward()
+    def rewind(self, tick=0):
+        ''' rewind to the given tick '''
+        for track in self:
+            # if track.tick + track.lookup().tick >= tick:
+            if track.tick >= tick:
+                break
+
     def lookup(self) -> PrMidiMsg:
         ''' look up the vaule before get '''
         if not self.stuck:
@@ -79,7 +88,7 @@ class PrMidiTrack():
             f' | msg#: {str(len(self.msgs)):<10}')
 
     def __iter__(self):
-        self.rewind()
+        self.__rewind_zero()
         while not self.stuck:
             yield self
             self.forward()

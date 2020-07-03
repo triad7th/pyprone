@@ -55,15 +55,16 @@ class PrMidiFile(PrObj):
                     csr_track = track
         return csr_track
 
-    def __rewind(self):
-        ''' rewind all tracks to the beginning '''
+    def __rewind(self, tick=0):
+        ''' set playhead to the given tick '''
         for track in self.tracks:
-            track.rewind()
+            track.rewind(tick)
 
     # public methods
-    def load(self, path: str):      
+    def load(self, path: str):
+        """ load a midifile """
         # open midifile
-        self._midifile = MidiFile(path)         
+        self._midifile = MidiFile(path)
         # create a tempo track
         self._tempotrack = PrTempo(self._midifile)
         # create other tracks
@@ -85,20 +86,14 @@ class PrMidiFile(PrObj):
                 self.tracks.append(track)
                 print(track)
 
-    def run(self):
-        self.__rewind()
-        csr_abs_secs, track = 0, PrMidiTrack() # empty track for while condition
+    def run(self, tick=0):
+        """ return iterator from the given tick """
+        self.__rewind(tick)
+        track = PrMidiTrack()
         while track:
             track = self.__next_track() # choosing a next track
             if track:
-                # yield 
-                # msg and delta secs
-                yield (
-                    track, csr_abs_secs,
-                    max(track.secs - csr_abs_secs, 0.0))    # negative value is ignored
-                                                            # 1. there's no minus time(secs) waiting!!
-                                                            # 2. ths negative value must be really small
-                csr_abs_secs = track.secs
+                yield track
                 track.forward()
         yield None
 
